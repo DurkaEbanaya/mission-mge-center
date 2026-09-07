@@ -546,10 +546,6 @@ mod imp {
                 }
             }
 
-            if let Some(virt_proc) = this.virt_proc.get() {
-                virt_proc.set_text(&format!("{}", static_cpu_info.core_usage_percent.len()));
-            }
-
             if let Some(virtualization) = this.virtualization.get() {
                 if let Some(vt) = static_cpu_info.virtualization_technology.as_ref() {
                     virtualization.set_text(vt.as_ref());
@@ -639,13 +635,17 @@ mod imp {
             this: &super::PerformancePageCpu,
             readings: &crate::magpie_client::Readings,
         ) -> bool {
-            let mut graph_widgets = this.imp().graph_widgets.take();
             let this = this.imp();
 
             let dynamic_cpu_info = &readings.cpu;
+            let core_count = dynamic_cpu_info.core_usage_percent.len();
 
-            if graph_widgets.len() == 0 {
-                return false;
+            // Turns out cores can come and go at runtime
+            let mut graph_widgets = this.graph_widgets.take();
+            if graph_widgets.len() != core_count + 2 {
+                this.graph_widgets.set(graph_widgets);
+                this.populate_usage_graphs(core_count);
+                graph_widgets = this.graph_widgets.take();
             }
 
             // Update global CPU graph
@@ -656,12 +656,12 @@ mod imp {
             graph_widgets[1].add_data_point(vec![dynamic_cpu_info.core_usage_percent.clone()]);
 
             // Update per-core graphs
-            for i in 0..dynamic_cpu_info.core_usage_percent.len() {
-                let graph_widget = &mut graph_widgets[i + 2];
-                graph_widget.add_data_point(vec![
-                    vec![dynamic_cpu_info.core_usage_percent[i]],
-                    vec![dynamic_cpu_info.core_kernel_usage_percent[i]],
-                ]);
+            let per_core = dynamic_cpu_info
+                .core_usage_percent
+                .iter()
+                .zip(dynamic_cpu_info.core_kernel_usage_percent.iter());
+            for (graph_widget, (usage, kernel)) in graph_widgets.iter_mut().skip(2).zip(per_core) {
+                graph_widget.add_data_point(vec![vec![*usage], vec![*kernel]]);
             }
 
             this.graph_widgets.set(graph_widgets);
@@ -896,6 +896,14 @@ mod imp {
 
         fn populate_usage_graphs(&self, cpu_count: usize) {
             let base_color = self.obj().base_color();
+
+            while let Some(child) = self.usage_graphs.first_child() {
+                self.usage_graphs.remove(&child);
+            }
+
+            if let Some(virt_proc) = self.virt_proc.get() {
+                virt_proc.set_text(&format!("{}", cpu_count));
+            }
 
             let col_count = Self::compute_column_count(cpu_count);
 
