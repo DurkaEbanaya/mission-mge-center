@@ -77,3 +77,17 @@ cargo_build = custom_target(
     + ' ' + 'cp ' + meson.project_build_root() + '/src/' + rust_target + '/' + meson.project_name() + ' ' + '@OUTPUT@'
   ]
 )
+
+test(
+  'cargo-test',
+  find_program('sh'),
+  args: [
+    '-c', 'env '
+    + ' env '.join(cargo_env)
+    + ' ' + cargo_bin.full_path() + ' test ' + ' '.join(cargo_opt)
+  ],
+  suite: 'rust',
+  timeout: 0,
+  is_parallel: false,
+  verbose: true,
+)
