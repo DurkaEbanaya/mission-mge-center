@@ -33,6 +33,7 @@
     </gresource>
 
     <gresource prefix="/io/missioncenter/MissionCenter">
+        <file preprocess="xml-stripblanks">acrylic-noise.svg</file>
         <file preprocess="xml-stripblanks">line-dashed-disk.svg</file>
         <file preprocess="xml-stripblanks">line-dashed-gpu.svg</file>
         <file preprocess="xml-stripblanks">line-dashed-mem.svg</file>

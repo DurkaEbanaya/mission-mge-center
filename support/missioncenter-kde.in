@@ -1,0 +1,28 @@
+#!/bin/sh
+
+missioncenter='@BINDIR@/missioncenter'
+gtk_nocsd='@GTK_NOCSD@'
+
+if [ -n "${SNAP:-}" ]; then
+    missioncenter="$SNAP$missioncenter"
+    gtk_nocsd="$SNAP$gtk_nocsd"
+elif [ -n "${APPDIR:-}" ]; then
+    missioncenter="$APPDIR/bin/missioncenter"
+    gtk_nocsd="$APPDIR/lib/libgtk-nocsd.so.0"
+    SHARUN_ALLOW_LD_PRELOAD=1
+    export SHARUN_ALLOW_LD_PRELOAD
+fi
+
+missioncenter=${MISSIONCENTER_BINARY:-$missioncenter}
+gtk_nocsd=${MISSIONCENTER_GTK_NOCSD:-$gtk_nocsd}
+
+if [ -r "$gtk_nocsd" ]; then
+    if [ -n "${LD_PRELOAD:-}" ]; then
+        LD_PRELOAD="$gtk_nocsd:$LD_PRELOAD"
+    else
+        LD_PRELOAD="$gtk_nocsd"
+    fi
+    export LD_PRELOAD
+fi
+
+exec "$missioncenter" "$@"

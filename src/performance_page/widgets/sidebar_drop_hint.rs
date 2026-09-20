@@ -101,7 +101,7 @@ mod imp {
 
             this.set_height_request(3);
 
-            let radius = graphene::Size::new(2., 2.);
+            let radius = graphene::Size::new(0., 0.);
             let bounds = gsk::RoundedRect::new(
                 graphene::Rect::new(0., 0., this.width() as _, this.height() as _),
                 radius,

@@ -3,7 +3,7 @@
   "runtime": "org.gnome.Platform",
   "runtime-version": "50",
   "sdk": "org.gnome.Sdk",
-  "command": "missioncenter",
+  "command": "missioncenter-kde",
   "build-options": {
     "no-debuginfo": true,
     "append-path": "/app/rust-toolchain-glibc/cargo/bin",
@@ -42,8 +42,8 @@
     "--filesystem=/var/lib/flatpak/app:ro",
     "--filesystem=/snap:ro",
     "--filesystem=/var/lib/snapd:ro",
-    "--env=XDG_DATA_DIRS=/app/share:/usr/share:/usr/share/runtime/share:/run/host/user-share:/run/host/share:/var/lib/flatpak/exports/share:/var/lib/snapd/desktop:~/.local/share/flatpak/exports/share",
-    "--env=LD_PRELOAD="
+    "--env=LD_PRELOAD=",
+    "--env=XDG_DATA_DIRS=/app/share:/usr/share:/usr/share/runtime/share:/run/host/user-share:/run/host/share:/var/lib/flatpak/exports/share:/var/lib/snapd/desktop:~/.local/share/flatpak/exports/share"
   ],
   "cleanup": [
     "/sbin",
@@ -361,4 +361,3 @@
     }
   ]
 }
-

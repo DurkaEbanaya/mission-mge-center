@@ -4,6 +4,11 @@
 
 Monitor your CPU, Memory, Disk, Network and GPU usage with [Mission Center](https://missioncenter.io/)
 
+> This KDE-focused fork keeps the current Mission Center backend and adds native
+> KWin decorations through GTK-NoCSD, square UI elements, and a compositor-blurred
+> acrylic sidebar on Wayland. The blur uses `ext_background_effect_v1` and falls
+> back to the normal opaque sidebar when the compositor does not support it.
+
 ![](https://gitlab.com/mission-center-devs/mission-center/-/raw/main/screenshots/0001-cpu.png)
 
 ## Features

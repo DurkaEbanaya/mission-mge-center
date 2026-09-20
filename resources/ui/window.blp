@@ -21,6 +21,10 @@ using Gtk 4.0;
 using Adw 1;
 
 template $MissionCenterWindow: Adw.ApplicationWindow {
+    styles [
+        "mission-center-window",
+    ]
+
     width-request: 360;
     height-request: 400;
     default-width: 800;
@@ -32,9 +36,17 @@ template $MissionCenterWindow: Adw.ApplicationWindow {
     Adw.Breakpoint breakpoint {}
 
     content: Adw.OverlaySplitView split_view {
+        styles [
+            "mission-center-shell",
+        ]
+
         show-sidebar: bind toggle_sidebar_button.active bidirectional;
 
-        sidebar: Adw.ToolbarView {
+        sidebar: Adw.ToolbarView sidebar_view {
+            styles [
+                "mission-center-sidebar",
+            ]
+
             [top]
             Adw.HeaderBar {
                 [start]
@@ -101,6 +113,10 @@ template $MissionCenterWindow: Adw.ApplicationWindow {
         };
 
         content: Adw.ToolbarView window_content {
+            styles [
+                "mission-center-content",
+            ]
+
             [top]
             Adw.HeaderBar header_bar {
                 [start]

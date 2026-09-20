@@ -36,7 +36,7 @@ use magpie_types::memory::Memory;
 
 use crate::i18n::i18n_f;
 
-const GRAPH_RADIUS: f32 = 7.;
+const GRAPH_RADIUS: f32 = 0.;
 const FILL_ALPHA: f32 = 50. / 255.;
 
 mod imp {

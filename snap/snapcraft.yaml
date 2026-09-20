@@ -63,7 +63,7 @@ apps:
       - system-observe
       - udisks2
     extensions: [ gnome ]
-    command: usr/bin/missioncenter
+    command: usr/bin/missioncenter-kde
     common-id: io.missioncenter.MissionCenter
     desktop: usr/share/applications/io.missioncenter.MissionCenter.desktop
 

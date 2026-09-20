@@ -28,12 +28,12 @@ cargo_opt  = []
 rustflags = []
 
 if get_option('flatpak') == false
-    cargo_env += [ 'CARGO_HOME=' + meson.project_build_root()  / 'cargo-home' ]
+    cargo_env += [ 'CARGO_HOME="' + meson.project_build_root()  / 'cargo-home' + '"' ]
 endif
 
-cargo_opt += [ '--manifest-path', meson.project_source_root() / 'Cargo.toml' ]
-cargo_opt += [ '--target-dir', meson.project_build_root()  / 'src' ]
-cargo_env += [ 'BUILD_ROOT=' + meson.project_build_root() ]
+cargo_opt += [ '--manifest-path', '"' + meson.project_source_root() / 'Cargo.toml' + '"' ]
+cargo_opt += [ '--target-dir', '"' + meson.project_build_root()  / 'src' + '"' ]
+cargo_env += [ 'BUILD_ROOT="' + meson.project_build_root() + '"' ]
 
 if get_option('b_lto') == true
     if c_compiler.get_id() != 'clang'
@@ -74,7 +74,7 @@ cargo_build = custom_target(
     + ' env '.join(cargo_env)
     + ' ' + cargo_bin.full_path() + ' build ' + ' '.join(cargo_opt)
     + ' ' + '&&'
-    + ' ' + 'cp ' + meson.project_build_root() + '/src/' + rust_target + '/' + meson.project_name() + ' ' + '@OUTPUT@'
+    + ' ' + 'cp "' + meson.project_build_root() + '/src/' + rust_target + '/' + meson.project_name() + '" "' + '@OUTPUT@' + '"'
   ]
 )
 

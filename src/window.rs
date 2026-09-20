@@ -35,7 +35,7 @@ use crate::performance_page::widgets::AnimationFrame;
 use crate::widgets::ListCell;
 use crate::widgets::Placeholder;
 use crate::widgets::ThemeSelector;
-use crate::{app, magpie_client::Readings, settings};
+use crate::{app, magpie_client::Readings, settings, wayland_blur::WaylandBlur};
 
 fn special_shortcuts(
 ) -> &'static HashMap<gdk::ModifierType, HashMap<gdk::Key, fn(&MissionCenterWindow) -> bool>> {
@@ -270,6 +270,8 @@ mod imp {
         #[template_child]
         pub split_view: TemplateChild<adw::OverlaySplitView>,
         #[template_child]
+        pub sidebar_view: TemplateChild<adw::ToolbarView>,
+        #[template_child]
         pub menu_button: TemplateChild<gtk::MenuButton>,
         #[template_child]
         pub window_content: TemplateChild<adw::ToolbarView>,
@@ -334,6 +336,7 @@ mod imp {
         pub stored_readings: RefCell<Option<Readings>>,
         pub is_refreshing_paused: Cell<bool>,
         pub(super) services_refresh_counter: Cell<u8>,
+        pub blur: RefCell<Option<WaylandBlur>>,
     }
 
     impl Default for MissionCenterWindow {
@@ -341,6 +344,7 @@ mod imp {
             Self {
                 breakpoint: TemplateChild::default(),
                 split_view: TemplateChild::default(),
+                sidebar_view: TemplateChild::default(),
                 window_content: TemplateChild::default(),
                 menu_button: TemplateChild::default(),
                 bottom_bar: TemplateChild::default(),
@@ -378,6 +382,7 @@ mod imp {
                 stored_readings: RefCell::new(None),
                 is_refreshing_paused: Cell::new(false),
                 services_refresh_counter: Cell::new(0),
+                blur: RefCell::new(None),
             }
         }
     }
@@ -626,12 +631,12 @@ mod imp {
                     action.set_state(&new_state.to_variant());
                     imp.toggle_sidebar_button.set_active(new_state);
 
+                    if new_state && !imp.window_width_below_threshold() {
+                        imp.split_view.set_collapsed(false);
+                    }
+
                     if old_state != imp.user_hid_sidebar.get() {
-                        if imp.performance_page_active.get() {
-                            if !imp.window_width_below_threshold() {
-                                imp.split_view.set_collapsed(false);
-                            }
-                        } else if new_state == false {
+                        if !imp.performance_page_active.get() && !new_state {
                             // If the use dismisses the siderbar using the keyboard shortcut, while
                             // not in the performance page, don't treat it as an intentional action.
                             return;
@@ -737,6 +742,41 @@ mod imp {
                 || summary_mode
                 || self.window_width_below_threshold()
         }
+
+        fn update_blur_region(&self) {
+            let mut blur = self.blur.borrow_mut();
+            let Some(blur) = blur.as_mut() else {
+                return;
+            };
+
+            let visible = self.split_view.shows_sidebar() && self.sidebar_view.is_mapped();
+            let collapsed = self.split_view.is_collapsed();
+            let supports_blur = blur.update(
+                self.obj().upcast_ref::<gtk::Window>(),
+                self.sidebar_view.upcast_ref::<gtk::Widget>(),
+                self.window_content.upcast_ref::<gtk::Widget>(),
+                visible,
+                collapsed,
+            );
+
+            if supports_blur && visible && !collapsed {
+                self.obj().add_css_class("acrylic-enabled");
+            } else {
+                self.obj().remove_css_class("acrylic-enabled");
+            }
+        }
+
+        fn disable_blur(&self) {
+            if let Some(blur) = self.blur.borrow_mut().as_mut() {
+                blur.update(
+                    self.obj().upcast_ref::<gtk::Window>(),
+                    self.sidebar_view.upcast_ref::<gtk::Widget>(),
+                    self.window_content.upcast_ref::<gtk::Widget>(),
+                    false,
+                    self.split_view.is_collapsed(),
+                );
+            }
+        }
     }
 
     #[glib::object_subclass]
@@ -783,6 +823,24 @@ mod imp {
 
             self.configure_actions();
             self.configure_theme_selection();
+
+            self.split_view.connect_show_sidebar_notify({
+                let this = self.obj().downgrade();
+                move |_| {
+                    if let Some(this) = this.upgrade() {
+                        this.imp().update_blur_region();
+                    }
+                }
+            });
+
+            self.split_view.connect_collapsed_notify({
+                let this = self.obj().downgrade();
+                move |_| {
+                    if let Some(this) = this.upgrade() {
+                        this.imp().update_blur_region();
+                    }
+                }
+            });
 
             idle_add_local_once({
                 let this = self.obj().downgrade();
@@ -963,9 +1021,7 @@ mod imp {
                     this.apps_page.collapse();
                     this.services_page.collapse();
 
-                    if this.performance_page_active.get() {
-                        this.split_view.set_collapsed(this.should_hide_sidebar());
-                    }
+                    this.split_view.set_collapsed(true);
                 }
             });
             self.breakpoint.connect_unapply({
@@ -1001,7 +1057,8 @@ mod imp {
                         this.split_view.set_collapsed(should_hide_sidebar);
                         this.split_view.set_show_sidebar(!should_hide_sidebar);
                     } else {
-                        this.split_view.set_collapsed(true);
+                        this.split_view
+                            .set_collapsed(this.window_width_below_threshold());
                         this.split_view.set_show_sidebar(false);
                     }
                 }
@@ -1043,6 +1100,23 @@ mod imp {
 
             self.stack
                 .set_visible_child_name(settings!().string("window-selected-page").as_str());
+
+            if let Some(blur) = WaylandBlur::new(self.obj().upcast_ref::<gtk::Window>()) {
+                self.blur.replace(Some(blur));
+                self.update_blur_region();
+            }
+        }
+
+        fn size_allocate(&self, width: i32, height: i32, baseline: i32) {
+            self.parent_size_allocate(width, height, baseline);
+            self.update_blur_region();
+        }
+
+        fn unrealize(&self) {
+            self.disable_blur();
+            self.blur.take();
+            self.obj().remove_css_class("acrylic-enabled");
+            self.parent_unrealize();
         }
     }
 

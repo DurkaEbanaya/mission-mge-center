@@ -47,6 +47,7 @@ mod performance_page;
 mod preferences;
 mod services_page;
 mod table_view;
+mod wayland_blur;
 mod widgets;
 mod window;
 

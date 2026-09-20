@@ -20,6 +20,7 @@ subdir('data')
 subdir('po')
 subdir('resources')
 subdir('src')
+subdir('support')
 
 gnome.post_install(
      glib_compile_schemas: true,

@@ -27,5 +27,25 @@ export OUTNAME=MissionCenter-"$VERSION"-"$ARCH".AppImage
 
 ./get-debloated-pkgs --add-common --prefer-nano
 
-./quick-sharun /usr/bin/missioncenter /usr/bin/missioncenter-magpie
+gtk_nocsd=
+for candidate in \
+    /usr/lib/missioncenter/libgtk-nocsd.so.0 \
+    /usr/lib64/missioncenter/libgtk-nocsd.so.0 \
+    /usr/lib/*/missioncenter/libgtk-nocsd.so.0; do
+    if [ -r "$candidate" ]; then
+        gtk_nocsd=$candidate
+        break
+    fi
+done
+
+if [ -z "$gtk_nocsd" ]; then
+    echo "GTK-NoCSD library not found" >&2
+    exit 1
+fi
+
+./quick-sharun \
+    /usr/bin/missioncenter-kde \
+    /usr/bin/missioncenter \
+    /usr/bin/missioncenter-magpie \
+    "$gtk_nocsd"
 ./quick-sharun --make-appimage
