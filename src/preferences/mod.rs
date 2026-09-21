@@ -22,6 +22,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
+mod appearance_page;
 mod apps_services_page;
 mod general_page;
 mod performance_page;
@@ -122,6 +123,7 @@ impl PreferencesDialog {
         let this: Self = glib::Object::builder().build();
 
         this.add(&general_page::PreferencesGeneralPage::new());
+        this.add(&appearance_page::PreferencesAppearancePage::new());
         this.add(&performance_page::PreferencesPerformancePage::new());
         this.add(&apps_services_page::PreferencesAppsServicesPage::new());
         this.add(&units_page::PreferencesUnitsPage::new());

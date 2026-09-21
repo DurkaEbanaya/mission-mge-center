@@ -32,6 +32,7 @@ blueprints = custom_target('blueprints',
     'ui/performance_page/disk_smart_failure_dialog.blp',
 
     'ui/preferences/apps_services_page.blp',
+    'ui/preferences/appearance_page.blp',
     'ui/preferences/general_page.blp',
     'ui/preferences/performance_page.blp',
     'ui/preferences/units_page.blp',
@@ -64,4 +65,3 @@ gnome.compile_resources('missioncenter',
   install_dir: pkgdatadir,
   dependencies: blueprints,
 )
-

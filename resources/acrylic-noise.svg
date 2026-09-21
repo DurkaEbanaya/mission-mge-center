@@ -3,5 +3,5 @@
     <feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="4" seed="37"/>
     <feColorMatrix type="saturate" values="0"/>
   </filter>
-  <rect width="96" height="96" filter="url(#noise)" opacity="0.075"/>
+  <rect width="96" height="96" filter="url(#noise)"/>
 </svg>

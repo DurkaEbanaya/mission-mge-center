@@ -1,0 +1,116 @@
+/* ui/preferences/appearance_page.blp
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+using Gtk 4.0;
+using Adw 1;
+
+template $PreferencesAppearancePage: Adw.PreferencesPage {
+  title: _("Appearance");
+  icon-name: "applications-graphics-symbolic";
+
+  Adw.PreferencesGroup {
+    title: _("Acrylic Sidebar");
+    description: _("Changes are applied immediately. Blur strength itself is controlled by KWin.");
+
+    Adw.ComboRow preset {
+      title: _("Preset");
+    }
+
+    Adw.ActionRow {
+      title: _("Tint Opacity");
+      subtitle: _("How strongly the theme color covers the desktop");
+
+      Gtk.Scale tint_opacity {
+        adjustment: Gtk.Adjustment {
+          lower: 0;
+          upper: 100;
+          step-increment: 1;
+          value: 46;
+        };
+        digits: 0;
+        hexpand: true;
+        draw-value: true;
+        value-pos: left;
+      }
+    }
+
+    Adw.ActionRow {
+      title: _("Noise");
+      subtitle: _("Fine grain over the blurred background");
+
+      Gtk.Scale noise_opacity {
+        adjustment: Gtk.Adjustment {
+          lower: 0;
+          upper: 100;
+          step-increment: 1;
+          value: 8;
+        };
+        digits: 0;
+        hexpand: true;
+        draw-value: true;
+        value-pos: left;
+      }
+    }
+
+    Adw.ActionRow {
+      title: _("Highlight");
+      subtitle: _("Brightness of the diagonal light layer");
+
+      Gtk.Scale highlight_opacity {
+        adjustment: Gtk.Adjustment {
+          lower: 0;
+          upper: 100;
+          step-increment: 1;
+          value: 9;
+        };
+        digits: 0;
+        hexpand: true;
+        draw-value: true;
+        value-pos: left;
+      }
+    }
+
+    Adw.ActionRow {
+      title: _("Shadow");
+      subtitle: _("Darkness at the opposite edge of the gradient");
+
+      Gtk.Scale shadow_opacity {
+        adjustment: Gtk.Adjustment {
+          lower: 0;
+          upper: 100;
+          step-increment: 1;
+          value: 6;
+        };
+        digits: 0;
+        hexpand: true;
+        draw-value: true;
+        value-pos: left;
+      }
+    }
+
+    Adw.ActionRow {
+      title: _("Divider");
+      subtitle: _("Contrast of the sidebar's right edge");
+
+      Gtk.Scale divider_opacity {
+        adjustment: Gtk.Adjustment {
+          lower: 0;
+          upper: 100;
+          step-increment: 1;
+          value: 13;
+        };
+        digits: 0;
+        hexpand: true;
+        draw-value: true;
+        value-pos: left;
+      }
+    }
+
+    Adw.ButtonRow reset {
+      title: _("Reset Acrylic Settings");
+      start-icon-name: "edit-undo-symbolic";
+    }
+  }
+}

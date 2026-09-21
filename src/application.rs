@@ -203,6 +203,11 @@ mod imp {
                     gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
                 );
 
+                crate::acrylic_style::install(
+                    &gtk::gdk::Display::default().expect("Could not connect to a display."),
+                    settings,
+                );
+
                 window.upcast()
             };
 

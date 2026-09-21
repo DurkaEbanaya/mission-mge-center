@@ -70,6 +70,7 @@
         <file preprocess="xml-stripblanks">ui/performance_page/summary_graph.ui</file>
 
         <file preprocess="xml-stripblanks">ui/preferences/apps_services_page.ui</file>
+        <file preprocess="xml-stripblanks">ui/preferences/appearance_page.ui</file>
         <file preprocess="xml-stripblanks">ui/preferences/general_page.ui</file>
         <file preprocess="xml-stripblanks">ui/preferences/performance_page.ui</file>
         <file preprocess="xml-stripblanks">ui/preferences/units_page.ui</file>

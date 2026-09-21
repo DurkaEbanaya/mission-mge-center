@@ -8,6 +8,8 @@ Monitor your CPU, Memory, Disk, Network and GPU usage with [Mission Center](http
 > KWin decorations through GTK-NoCSD, square UI elements, and a compositor-blurred
 > acrylic sidebar on Wayland. The blur uses `ext_background_effect_v1` and falls
 > back to the normal opaque sidebar when the compositor does not support it.
+> Acrylic tint, noise, lighting, and divider strength can be adjusted live in
+> the Appearance preferences.
 
 ![](https://gitlab.com/mission-center-devs/mission-center/-/raw/main/screenshots/0001-cpu.png)
 

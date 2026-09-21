@@ -52,6 +52,36 @@
             <description>If light or dark interface style should be used</description>
         </key>
 
+        <key name="acrylic-tint-opacity" type="i">
+            <range min="0" max="100"/>
+            <default>46</default>
+            <summary>Acrylic sidebar tint opacity in percent</summary>
+        </key>
+
+        <key name="acrylic-noise-opacity" type="i">
+            <range min="0" max="100"/>
+            <default>8</default>
+            <summary>Acrylic sidebar noise opacity in percent</summary>
+        </key>
+
+        <key name="acrylic-highlight-opacity" type="i">
+            <range min="0" max="100"/>
+            <default>9</default>
+            <summary>Acrylic sidebar highlight opacity in percent</summary>
+        </key>
+
+        <key name="acrylic-shadow-opacity" type="i">
+            <range min="0" max="100"/>
+            <default>6</default>
+            <summary>Acrylic sidebar shadow opacity in percent</summary>
+        </key>
+
+        <key name="acrylic-divider-opacity" type="i">
+            <range min="0" max="100"/>
+            <default>13</default>
+            <summary>Acrylic sidebar divider opacity in percent</summary>
+        </key>
+
         <key name="app-update-interval" type="i">
             <range min="10" max="200"/>
             <default>20</default>

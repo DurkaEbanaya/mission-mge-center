@@ -14,18 +14,7 @@ window {
 
 .mission-center-window.acrylic-enabled .mission-center-shell .sidebar-pane,
 .mission-center-window.acrylic-enabled .mission-center-shell .overlay-pane {
-    background-color: alpha(@theme_bg_color, 0.46);
-    background-image:
-        url("resource:///io/missioncenter/MissionCenter/acrylic-noise.svg"),
-        linear-gradient(
-            135deg,
-            alpha(white, 0.09),
-            alpha(white, 0.025) 42%,
-            alpha(black, 0.055)
-        );
-    background-repeat: repeat, no-repeat;
-    background-size: 96px 96px, cover;
-    box-shadow: inset -1px 0 alpha(@theme_fg_color, 0.13);
+    background-color: transparent;
 }
 
 .mission-center-window.acrylic-enabled .mission-center-sidebar {
