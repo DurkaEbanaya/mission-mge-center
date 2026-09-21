@@ -491,8 +491,7 @@ impl MissionCenterApplication {
         };
 
         let about = magpie.about_system();
-
-        let dialog = AboutSystemDialog::new(about);
+        let hardware = magpie.hardware_system();
 
         let Some(window) = self.window() else {
             g_critical!(
@@ -502,7 +501,8 @@ impl MissionCenterApplication {
             return;
         };
 
-        dialog.present(Some(&window));
+        let dialog = AboutSystemDialog::new(about, hardware, window.upcast_ref());
+        dialog.present();
     }
 
     pub fn show_first_run_dialog(&self) {

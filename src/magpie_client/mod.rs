@@ -102,7 +102,8 @@ enum Message {
     DisableService(u64),
     EjectDisk(String),
     SmartData(String),
-    AboutSystem,
+    AboutSystem(Sender<About>),
+    HardwareSystem(Sender<HardwareInfo>),
     ScriptName,
     ScriptRun,
     ScriptRunRevert,
@@ -113,7 +114,6 @@ enum Response {
     String(String),
     EjectResult(Result<(), ErrorEjectFailed>),
     SmartData(Option<SmartData>),
-    AboutResult(About),
     ScriptResult(Result<(), String>),
     ScriptNameResult(Option<(String, String)>),
 }
@@ -136,6 +136,27 @@ pub struct Readings {
 
     pub user_services: HashMap<u64, Service>,
     pub system_services: HashMap<u64, Service>,
+}
+
+#[derive(Debug)]
+pub struct HardwareInfo {
+    pub cpu: Cpu,
+    pub memory: Memory,
+    pub memory_devices: Vec<MemoryDevice>,
+    pub disks: Vec<Disk>,
+    pub gpus: HashMap<String, Gpu>,
+}
+
+impl Default for HardwareInfo {
+    fn default() -> Self {
+        Self {
+            cpu: Cpu::default(),
+            memory: Memory::default(),
+            memory_devices: Vec::new(),
+            disks: Vec::new(),
+            gpus: HashMap::new(),
+        }
+    }
 }
 
 impl Readings {
@@ -560,7 +581,8 @@ impl MagpieClient {
     }
 
     pub fn about_system(&self) -> About {
-        match self.sender.send(Message::AboutSystem) {
+        let (sender, receiver) = mpsc::channel();
+        match self.sender.send(Message::AboutSystem(sender)) {
             Err(e) => {
                 g_critical!(
                     "MissionCenter::SysInfo",
@@ -572,8 +594,8 @@ impl MagpieClient {
             _ => {}
         }
 
-        match self.receiver.recv() {
-            Ok(Response::AboutResult(ar)) => ar,
+        match receiver.recv_timeout(Duration::from_secs(5)) {
+            Ok(about) => about,
             Err(e) => {
                 g_critical!(
                     "MissionCenter::SysInfo",
@@ -581,12 +603,27 @@ impl MagpieClient {
                 );
                 About::default()
             }
-            _ => {
+        }
+    }
+
+    pub fn hardware_system(&self) -> HardwareInfo {
+        let (sender, receiver) = mpsc::channel();
+        if let Err(e) = self.sender.send(Message::HardwareSystem(sender)) {
+            g_critical!(
+                "MissionCenter::SysInfo",
+                "Error sending HardwareSystem to gatherer: {e}",
+            );
+            return HardwareInfo::default();
+        }
+
+        match receiver.recv_timeout(Duration::from_secs(10)) {
+            Ok(info) => info,
+            Err(e) => {
                 g_critical!(
                     "MissionCenter::SysInfo",
-                    "Error receiving AboutResult response. Wrong type"
+                    "Error receiving HardwareSystem response: {e}",
                 );
-                About::default()
+                HardwareInfo::default()
             }
         }
     }
@@ -804,12 +841,27 @@ impl MagpieClient {
                         );
                     }
                 }
-                Message::AboutSystem => {
-                    if let Err(e) = tx.send(Response::AboutResult(magpie.about())) {
+                Message::AboutSystem(sender) => {
+                    if let Err(e) = sender.send(magpie.about()) {
                         g_critical!(
                             "MissionCenter::SysInfo",
                             "Error sending AboutResult response: {}",
                             e
+                        );
+                    }
+                }
+                Message::HardwareSystem(sender) => {
+                    let info = HardwareInfo {
+                        cpu: magpie.cpu(),
+                        memory: magpie.memory(),
+                        memory_devices: magpie.memory_devices(),
+                        disks: magpie.disks_info(),
+                        gpus: magpie.gpus(),
+                    };
+                    if let Err(e) = sender.send(info) {
+                        g_critical!(
+                            "MissionCenter::SysInfo",
+                            "Error sending HardwareSystem response: {e}",
                         );
                     }
                 }
@@ -919,16 +971,28 @@ impl MagpieClient {
         });
 
         loop {
-            match rx.recv() {
-                Ok(message) => match message {
-                    Message::ContinueReading => {
-                        break;
+            match rx.recv_timeout(Duration::from_millis(100)) {
+                Ok(Message::ContinueReading) => break,
+                Ok(message) => {
+                    let (single_tx, mut single_rx) = mpsc::channel();
+                    single_tx
+                        .send(message)
+                        .expect("Failed to forward startup request");
+                    drop(single_tx);
+                    if !Self::handle_incoming_message(
+                        &magpie,
+                        &mut single_rx,
+                        &mut tx,
+                        Duration::ZERO,
+                    ) {
+                        return;
                     }
-                    Message::UpdateCoreCountAffectsPercentages(show) => {
-                        magpie.set_scale_cpu_usage_to_core_count(show);
+                }
+                Err(mpsc::RecvTimeoutError::Timeout) => {
+                    if !running.load(atomic::Ordering::Acquire) {
+                        return;
                     }
-                    _ => {}
-                },
+                }
                 Err(_) => {
                     g_warning!(
                         "MissionCenter::SysInfo",

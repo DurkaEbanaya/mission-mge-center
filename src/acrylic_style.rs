@@ -41,7 +41,22 @@ fn update_provider(provider: &gtk::CssProvider, settings: &gio::Settings) {
     background-size: 96px 96px, cover;
     box-shadow: inset -1px 0 alpha(@theme_fg_color, {divider:.2});
 }}
+
+.system-info-window.acrylic-enabled > contents {{
+    background-color: alpha(@theme_bg_color, {dialog_tint:.2});
+    background-image:
+        cross-fade({noise_percent:.0}% url("resource:///io/missioncenter/MissionCenter/acrylic-noise.svg"), image(transparent)),
+        linear-gradient(
+            135deg,
+            alpha(white, {highlight:.2}),
+            alpha(white, {highlight_mid:.3}) 42%,
+            alpha(black, {shadow:.2})
+        );
+    background-repeat: repeat, no-repeat;
+    background-size: 96px 96px, cover;
+}}
 "#,
+        dialog_tint = (tint + 0.08).min(1.0),
         highlight_mid = highlight * 0.28,
         noise_percent = noise * 100.0,
     ));

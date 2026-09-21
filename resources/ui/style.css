@@ -34,6 +34,19 @@ window {
     background-color: var(--window-bg-color);
 }
 
+.system-info-window.acrylic-enabled,
+.system-info-window.acrylic-enabled > contents,
+.system-info-window.acrylic-enabled toolbarview,
+.system-info-window.acrylic-enabled headerbar,
+.system-info-window.acrylic-enabled scrolledwindow,
+.system-info-window.acrylic-enabled viewport {
+    background-color: transparent;
+}
+
+.system-info-window.acrylic-enabled preferencesgroup > box > box {
+    background-color: alpha(@theme_bg_color, 0.52);
+}
+
 window columnview header {
     padding-left: 0px;
     padding-right: 0px;

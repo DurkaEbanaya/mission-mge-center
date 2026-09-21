@@ -189,6 +189,36 @@ impl WaylandBlur {
 
         self.state.supports_blur
     }
+
+    pub fn update_full(&mut self, window: &gtk::Window, enabled: bool) -> bool {
+        let _ = self.event_queue.dispatch_pending(&mut self.state);
+
+        let width = window.width();
+        let height = window.height();
+        let blur_region = (enabled && self.state.supports_blur && width > 0 && height > 0)
+            .then_some((0, 0, width, height));
+        if blur_region == self.blur_region && self.opaque_region.is_none() {
+            return self.state.supports_blur;
+        }
+
+        let queue_handle = self.event_queue.handle();
+        if let Some((x, y, width, height)) = blur_region {
+            let region = self.compositor.create_region(&queue_handle, ());
+            region.add(x, y, width, height);
+            self.effect.set_blur_region(Some(&region));
+            region.destroy();
+        } else {
+            self.effect.set_blur_region(None);
+        }
+        self.wl_surface.set_opaque_region(None);
+        self.blur_region = blur_region;
+        self.opaque_region = None;
+
+        let _ = self.connection.flush();
+        self.surface.force_next_commit();
+        window.queue_draw();
+        self.state.supports_blur
+    }
 }
 
 impl Drop for WaylandBlur {
