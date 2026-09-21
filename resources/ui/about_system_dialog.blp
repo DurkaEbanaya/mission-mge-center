@@ -8,7 +8,7 @@ using Adw 1;
 
 template $AboutSystemDialog: Adw.Window {
     title: _("System Information");
-    default-width: 680;
+    default-width: 980;
     default-height: 760;
     modal: true;
     hide-on-close: false;
@@ -39,28 +39,103 @@ template $AboutSystemDialog: Adw.Window {
             hscrollbar-policy: never;
 
             Adw.Clamp {
-                maximum-size: 1000;
+                maximum-size: 1280;
 
                 Box content_box {
                     margin-start: 20;
                     margin-end: 20;
                     margin-bottom: 24;
                     orientation: vertical;
-                    spacing: 24;
+                    spacing: 18;
 
-                    Image logo {
-                        margin-top: 12;
-                        pixel-size: 144;
+                    FlowBox summary_box {
+                        margin-top: 18;
+                        column-spacing: 24;
+                        row-spacing: 18;
+                        min-children-per-line: 1;
+                        max-children-per-line: 2;
+                        selection-mode: none;
+
+                        Image logo {
+                            pixel-size: 128;
+                            valign: center;
+                        }
+
+                        Box {
+                            orientation: vertical;
+                            spacing: 6;
+                            valign: center;
+
+                            Label device_title {
+                                styles [
+                                    "title-1",
+                                ]
+                                xalign: 0;
+                                wrap: true;
+                                selectable: true;
+                            }
+
+                            Label device_subtitle {
+                                styles [
+                                    "title-3",
+                                    "dim-label",
+                                ]
+                                xalign: 0;
+                                wrap: true;
+                                selectable: true;
+                            }
+
+                            Label device_specs {
+                                styles [
+                                    "dim-label",
+                                ]
+                                xalign: 0;
+                                wrap: true;
+                                selectable: true;
+                            }
+                        }
                     }
 
-                    Box hardware_groups {
-                        orientation: vertical;
-                        spacing: 24;
+                    Label {
+                        margin-top: 10;
+                        styles [
+                            "title-2",
+                            "system-info-section-title",
+                        ]
+                        xalign: 0.5;
+                        label: _("Device specifications");
                     }
 
-                    Box software_groups {
-                        orientation: vertical;
-                        spacing: 24;
+                    FlowBox hardware_groups {
+                        styles [
+                            "system-info-grid",
+                        ]
+                        column-spacing: 16;
+                        row-spacing: 16;
+                        min-children-per-line: 1;
+                        max-children-per-line: 3;
+                        selection-mode: none;
+                    }
+
+                    Label {
+                        margin-top: 10;
+                        styles [
+                            "title-2",
+                            "system-info-section-title",
+                        ]
+                        xalign: 0.5;
+                        label: _("System specifications");
+                    }
+
+                    FlowBox software_groups {
+                        styles [
+                            "system-info-grid",
+                        ]
+                        column-spacing: 16;
+                        row-spacing: 16;
+                        min-children-per-line: 1;
+                        max-children-per-line: 3;
+                        selection-mode: none;
                     }
                 }
             }

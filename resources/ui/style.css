@@ -43,8 +43,20 @@ window {
     background-color: transparent;
 }
 
-.system-info-window.acrylic-enabled preferencesgroup > box > box {
-    background-color: alpha(@theme_bg_color, 0.52);
+.system-info-grid > flowboxchild {
+    padding: 0;
+    background-color: transparent;
+}
+
+.system-info-grid .system-info-card {
+    margin: 0;
+}
+
+.system-info-grid .system-info-card preferencesgroup > box > box,
+.system-info-grid .system-info-card list,
+.system-info-grid .system-info-card row {
+    background-color: transparent;
+    box-shadow: none;
 }
 
 window columnview header {

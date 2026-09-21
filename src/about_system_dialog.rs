@@ -332,18 +332,34 @@ mod imp {
         #[template_child]
         logo: TemplateChild<gtk::Image>,
         #[template_child]
-        hardware_groups: TemplateChild<gtk::Box>,
+        summary_box: TemplateChild<gtk::FlowBox>,
         #[template_child]
-        software_groups: TemplateChild<gtk::Box>,
+        device_title: TemplateChild<gtk::Label>,
+        #[template_child]
+        device_subtitle: TemplateChild<gtk::Label>,
+        #[template_child]
+        device_specs: TemplateChild<gtk::Label>,
+        #[template_child]
+        hardware_groups: TemplateChild<gtk::FlowBox>,
+        #[template_child]
+        software_groups: TemplateChild<gtk::FlowBox>,
         blur: RefCell<Option<WaylandBlur>>,
     }
 
     impl AboutSystemDialog {
-        fn append_sections(container: &gtk::Box, sections: &[InfoSection]) {
+        fn append_sections(container: &gtk::FlowBox, sections: &[InfoSection]) {
             for section in sections {
-                let group = adw::PreferencesGroup::builder()
-                    .title(&section.title)
-                    .build();
+                let card = gtk::Box::new(gtk::Orientation::Vertical, 8);
+                card.set_hexpand(true);
+                card.add_css_class("system-info-card");
+
+                let title = gtk::Label::new(Some(&section.title));
+                title.set_xalign(0.5);
+                title.set_halign(gtk::Align::Fill);
+                title.add_css_class("title-3");
+                card.append(&title);
+
+                let group = adw::PreferencesGroup::new();
                 for entry in &section.entries {
                     let row = adw::ActionRow::builder()
                         .title(&entry.name)
@@ -360,23 +376,58 @@ mod imp {
                     });
                     group.add(&row);
                 }
-                container.append(&group);
+                card.append(&group);
+                container.append(&card);
             }
         }
 
         pub(super) fn setup(&self, about: About, hardware: HardwareInfo) {
+            let device_title = read_sysfs("board_name")
+                .or_else(|| about.device_info.model.clone())
+                .or_else(|| hardware.cpu.name.clone())
+                .unwrap_or_else(|| "Computer".into());
+            self.device_title.set_text(&device_title);
+            self.device_subtitle.set_text(
+                about
+                    .os_info
+                    .pretty_name
+                    .as_deref()
+                    .or(about.os_info.name.as_deref())
+                    .unwrap_or("Linux"),
+            );
+
+            let mut specs = Vec::new();
+            if let Some(cpu) = clean(hardware.cpu.name.clone()) {
+                specs.push(cpu);
+            }
+            if hardware.memory.mem_total > 0 {
+                specs.push(format!("{} RAM", bytes(hardware.memory.mem_total)));
+            }
+            let mut gpu_names: Vec<_> = hardware
+                .gpus
+                .values()
+                .filter_map(|gpu| clean(gpu.device_name.clone()))
+                .collect();
+            gpu_names.sort();
+            specs.extend(gpu_names);
+            self.device_specs.set_text(&specs.join("  ·  "));
+            self.device_specs.set_visible(!specs.is_empty());
+
             let hardware = hardware_sections(&hardware);
             let software = software_sections(&about);
             Self::append_sections(&self.hardware_groups, &hardware);
             Self::append_sections(&self.software_groups, &software);
 
-            self.logo.set_visible(
-                about
-                    .os_info
-                    .logo
-                    .map(|image| CachedIcon::from(image).apply_to_image(&self.logo, 144))
-                    .unwrap_or(false),
-            );
+            let logo_visible = about
+                .os_info
+                .logo
+                .map(|image| CachedIcon::from(image).apply_to_image(&self.logo, 144))
+                .unwrap_or(false);
+            if !logo_visible {
+                if let Some(child) = self.logo.parent() {
+                    self.summary_box.remove(&child);
+                }
+            }
 
             let text = hardware
                 .iter()
