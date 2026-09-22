@@ -12,10 +12,29 @@ template $PreferencesAppearancePage: Adw.PreferencesPage {
 
   Adw.PreferencesGroup {
     title: _("Acrylic Sidebar");
-    description: _("Changes are applied immediately. Blur strength itself is controlled by KWin.");
+    description: _("Changes are applied immediately.");
 
     Adw.ComboRow preset {
       title: _("Preset");
+    }
+
+    Adw.ActionRow kwin_blur_row {
+      title: _("Blur Intensity (KWin)");
+      subtitle: _("Global Plasma blur strength; affects all blurred windows");
+      visible: false;
+
+      Gtk.Scale blur_intensity {
+        adjustment: Gtk.Adjustment {
+          lower: 1;
+          upper: 15;
+          step-increment: 1;
+          value: 15;
+        };
+        digits: 0;
+        hexpand: true;
+        draw-value: true;
+        value-pos: left;
+      }
     }
 
     Adw.ActionRow {

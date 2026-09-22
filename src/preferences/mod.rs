@@ -21,6 +21,7 @@
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
+use std::cell::RefCell;
 
 mod appearance_page;
 mod apps_services_page;
@@ -78,14 +79,10 @@ pub const MIN_POINTS: i32 = 10;
 mod imp {
     use super::*;
 
-    #[derive(gtk::CompositeTemplate)]
+    #[derive(gtk::CompositeTemplate, Default)]
     #[template(resource = "/io/missioncenter/MissionCenter/ui/preferences/window.ui")]
-    pub struct PreferencesDialog {}
-
-    impl Default for PreferencesDialog {
-        fn default() -> Self {
-            Self {}
-        }
+    pub struct PreferencesDialog {
+        pub appearance_page: RefCell<Option<appearance_page::PreferencesAppearancePage>>,
     }
 
     #[glib::object_subclass]
@@ -123,11 +120,19 @@ impl PreferencesDialog {
         let this: Self = glib::Object::builder().build();
 
         this.add(&general_page::PreferencesGeneralPage::new());
-        this.add(&appearance_page::PreferencesAppearancePage::new());
+        let appearance_page = appearance_page::PreferencesAppearancePage::new();
+        this.add(&appearance_page);
+        this.imp().appearance_page.replace(Some(appearance_page));
         this.add(&performance_page::PreferencesPerformancePage::new());
         this.add(&apps_services_page::PreferencesAppsServicesPage::new());
         this.add(&units_page::PreferencesUnitsPage::new());
 
         this
+    }
+
+    pub fn refresh_kwin_blur(&self) {
+        if let Some(page) = self.imp().appearance_page.borrow().as_ref() {
+            page.refresh_kwin_blur();
+        }
     }
 }

@@ -65,6 +65,7 @@ mod imp {
         pub settings: gio::Settings,
         pub sys_info: RefCell<Option<crate::magpie_client::MagpieClient>>,
         pub window: RefCell<Option<crate::MissionCenterWindow>>,
+        pub preferences: RefCell<Option<crate::preferences::PreferencesDialog>>,
 
         pub apps_icons_cache: Cell<Option<HashMap<String, CachedIcon>>>,
     }
@@ -75,6 +76,7 @@ mod imp {
                 settings: gio::Settings::new("io.missioncenter.MissionCenter"),
                 sys_info: RefCell::new(None),
                 window: RefCell::new(None),
+                preferences: RefCell::new(None),
                 apps_icons_cache: Cell::new(None),
             }
         }
@@ -465,7 +467,13 @@ impl MissionCenterApplication {
             return;
         };
 
-        let preferences = crate::preferences::PreferencesDialog::new();
+        let preferences = self
+            .imp()
+            .preferences
+            .borrow_mut()
+            .get_or_insert_with(crate::preferences::PreferencesDialog::new)
+            .clone();
+        preferences.refresh_kwin_blur();
         preferences.present(Some(&window));
     }
 
